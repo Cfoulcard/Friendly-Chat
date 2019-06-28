@@ -15,6 +15,7 @@
  */
 package com.google.firebase.udacity.friendlychat;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -29,6 +30,10 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 
+import com.firebase.ui.auth.AuthUI;
+import com.firebase.ui.auth.IdpResponse;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
@@ -38,6 +43,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -46,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
 
     public static final String ANONYMOUS = "anonymous";
     public static final int DEFAULT_MSG_LENGTH_LIMIT = 1000;
-    public static final int RC_SIGN_IN = 1; //Request Code
+    public static final int RC_SIGN_IN = 123; //Request Code
 
     private ListView mMessageListView;
     private MessageAdapter mMessageAdapter;
@@ -66,6 +73,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        createSignInIntent();
+
+        privacyAndTerms();
 
         setContentView(R.layout.activity_main);
 
@@ -160,65 +170,102 @@ public class MainActivity extends AppCompatActivity {
             public void onCancelled(@NonNull DatabaseError databaseError) {
             }
         };
-        mMessagesDatabaseReference.addChildEventListener(mChildEventListener);
-        mAuthStateListener = new FirebaseAuth.AuthStateListener() {
-            @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                FirebaseUser user = firebaseAuth.getCurrentUser();
-                if (user != null) {
-
-                /*} else {
-                    startActivityForResult(
-                            AuthUI.getInstance()
-                                    .createSignInIntentBuilder()
-                                    .setAvailableProviders(Arrays.asList(
-                                            new AuthUI.IdpConfig.EmailBuilder().build(),
-                                            new AuthUI.IdpConfig.GoogleBuilder().build()
-                                    .build(),
-                            RC_SIGN_IN);
-
-                }*/
-
-                }
-            }
-
-/*            @Override
-            public boolean onCreateOptionsMenu(Menu menu) {
-                MenuInflater inflater = getMenuInflater();
-                inflater.inflate(R.menu.main_menu, menu);
-                return true;
-            }*/
-
-           /* @Override
-            public boolean onOptionsItemSelected(MenuItem item) {
-                return super.onOptionsItemSelected(item);
-            }
-
-            @Override
-            protected void onPause() {
-                super.onPause();
-                mAuth.removeAuthStateListener(mAuthStateListener);
-            }
-
-            @Override
-            protected void onResume() {
-                super.onResume();
-                mAuth.addAuthStateListener(mAuthStateListener);
-            }*/
-
-        };
     }
 
+    public void createSignInIntent() {
+        // [START auth_fui_create_intent]
+        // Choose authentication providers
+        List<AuthUI.IdpConfig> providers = Arrays.asList(
+                new AuthUI.IdpConfig.EmailBuilder().build(),
+                new AuthUI.IdpConfig.GoogleBuilder().build());
+
+        // Create and launch sign-in intent
+        startActivityForResult(
+                AuthUI.getInstance()
+                        .createSignInIntentBuilder()
+                        .setAvailableProviders(providers)
+                        .build(),
+                RC_SIGN_IN);
+        // [END auth_fui_create_intent]
+    }
+
+    // [START auth_fui_result]
     @Override
-    public void onStart() {
-        super.onStart();
-        // Check if user is signed in (non-null) and update UI accordingly.
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        updateUI(currentUser);
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == RC_SIGN_IN) {
+            IdpResponse response = IdpResponse.fromResultIntent(data);
+
+            if (resultCode == RESULT_OK) {
+                // Successfully signed in
+                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                // ...
+            } else {
+                // Sign in failed. If response is null the user canceled the
+                // sign-in flow using the back button. Otherwise check
+                // response.getError().getErrorCode() and handle the error.
+                // ...
+            }
+        }
+    }
+    // [END auth_fui_result]
+
+    public void signOut() {
+        // [START auth_fui_signout]
+        AuthUI.getInstance()
+                .signOut(this)
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    public void onComplete(@NonNull Task<Void> task) {
+                        // ...
+                    }
+                });
+        // [END auth_fui_signout]
     }
 
-    private void updateUI(FirebaseUser user) {
+    public void delete() {
+        // [START auth_fui_delete]
+        AuthUI.getInstance()
+                .delete(this)
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        // ...
+                    }
+                });
+        // [END auth_fui_delete]
     }
 
+    public void themeAndLogo() {
+        List<AuthUI.IdpConfig> providers = Collections.emptyList();
+
+        // [START auth_fui_theme_logo]
+        startActivityForResult(
+                AuthUI.getInstance()
+                        .createSignInIntentBuilder()
+                        .setAvailableProviders(providers)
+                    //    .setLogo(R.drawable.my_great_logo)      // Set logo drawable
+                    //    .setTheme(R.style.MySuperAppTheme)      // Set theme
+                        .build(),
+                RC_SIGN_IN);
+        // [END auth_fui_theme_logo]
+    }
+
+    public void privacyAndTerms() {
+        List<AuthUI.IdpConfig> providers = Collections.emptyList();
+        // [START auth_fui_pp_tos]
+        startActivityForResult(
+                AuthUI.getInstance()
+                        .createSignInIntentBuilder()
+                        .setAvailableProviders(providers)
+                        .setTosAndPrivacyPolicyUrls(
+                                "https://example.com/terms.html",
+                                "https://example.com/privacy.html")
+                        .build(),
+                RC_SIGN_IN);
+        // [END auth_fui_pp_tos]
+    }
 
 }
+
+
