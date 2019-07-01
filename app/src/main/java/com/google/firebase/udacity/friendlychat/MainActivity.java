@@ -23,6 +23,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.InputFilter;
 import android.text.TextWatcher;
+import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -170,6 +171,8 @@ public class MainActivity extends AppCompatActivity {
             public void onCancelled(@NonNull DatabaseError databaseError) {
             }
         };
+
+
     }
 
     public void createSignInIntent() {
@@ -187,6 +190,18 @@ public class MainActivity extends AppCompatActivity {
                         .build(),
                 RC_SIGN_IN);
         // [END auth_fui_create_intent]
+    }
+
+    public void signOut() {
+        // [START auth_fui_signout]
+        AuthUI.getInstance()
+                .signOut(this)
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    public void onComplete(@NonNull Task<Void> task) {
+                        // ...
+                    }
+                });
+        // [END auth_fui_signout]
     }
 
     // [START auth_fui_result]
@@ -211,17 +226,9 @@ public class MainActivity extends AppCompatActivity {
     }
     // [END auth_fui_result]
 
-    public void signOut() {
-        // [START auth_fui_signout]
-        AuthUI.getInstance()
-                .signOut(this)
-                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                    public void onComplete(@NonNull Task<Void> task) {
-                        // ...
-                    }
-                });
-        // [END auth_fui_signout]
-    }
+
+
+
 
     public void delete() {
         // [START auth_fui_delete]
@@ -264,6 +271,13 @@ public class MainActivity extends AppCompatActivity {
                         .build(),
                 RC_SIGN_IN);
         // [END auth_fui_pp_tos]
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        return true;
     }
 
 }
