@@ -181,6 +181,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+
         if (requestCode == RC_SIGN_IN) {
             if (resultCode == RESULT_OK) {
                 // Sign-in succeeded, set up the UI
@@ -192,7 +193,7 @@ public class MainActivity extends AppCompatActivity {
             } else if (requestCode == RC_PHOTO_PICKER && resultCode == RESULT_OK) {
                 Uri selectedImageURI = data.getData();
                 StorageReference photoRef =
-                        mChatPhotosStorageReference.child(selectedImageURI.getLastPathSegment());
+                        mChatPhotosStorageReference.child("PostImage");
 
                 //Upload file to Firebase Storage
                 photoRef.putFile(selectedImageURI).addOnSuccessListener(this, new OnSuccessListener<UploadTask.TaskSnapshot>() {
